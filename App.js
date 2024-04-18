@@ -12,7 +12,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { Alert, Button, ScrollView, StyleSheet, Text, TextInput, View, TouchableOpacity, Linking } from 'react-native';
+import { Alert, StatusBar, ScrollView, StyleSheet, Text, TextInput, View, TouchableOpacity, Linking } from 'react-native';
 import * as SQLite from 'expo-sqlite';
 
 const App = () => {
@@ -182,7 +182,11 @@ const App = () => {
                     style={styles.input}
                     autoCapitalize="none"
                 />
-                <Button title={editingContact ? "Update Contact" : "Add Contact"} onPress={handleAddOrUpdateContact} color="#1c313a" />
+                <TouchableOpacity style={styles.button} onPress={handleAddOrUpdateContact}>
+                    <Text style={styles.buttonText}>
+                        {editingContact ? 'Update Contact' : 'Add Contact'}
+                    </Text>
+                </TouchableOpacity>
             </View>
             <ScrollView style={styles.listContainer}>
                 {contacts.map(({ id, name, phone }) => (
@@ -197,8 +201,15 @@ const App = () => {
                             ) : null}
                         </View>
                         <View style={styles.buttonsContainer}>
-                            <Button title="Edit" onPress={() => handleEditContact({ id, name, phone })} color="#1c313a" />
-                            <Button title="Delete" onPress={() => deleteContact(id)} color="#e53935" />
+                            <View style={styles.buttonsContainer}>
+                                <TouchableOpacity onPress={() => handleEditContact({ id, name, phone })}>
+                                    <Text>Edit</Text> 
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => deleteContact(id)} style={{ marginLeft: 10 }}>
+                                    <Text>Delete</Text>
+                                </TouchableOpacity>
+                            </View>
+
                         </View>
                     </View>
                 ))}
@@ -210,57 +221,99 @@ const App = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
-        marginTop: 30,
+        backgroundColor: '#f7f7f7',
+        paddingTop: 20,
     },
     heading: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#1c313a',
-        paddingTop: 50,
-        paddingBottom: 20,
-        textAlign: 'center',
+        padding: 20,
     },
     inputContainer: {
-        flexDirection: 'row',
-        padding: 10,
-        justifyContent: 'space-between',
+        backgroundColor: '#ffffff',
+        borderRadius: 10,
+        padding: 15,
+        marginHorizontal: 10,
+        marginVertical: 5,
+        elevation: 1, // Add shadow for Android
+        // Add shadow for iOS
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.22,
+        shadowRadius: 2.22,
     },
     input: {
         borderWidth: 1,
-        borderColor: '#1c313a',
+        borderColor: '#ddd',
         borderRadius: 5,
         padding: 10,
-        flex: 1,
-        marginRight: 10,
+        fontSize: 16,
+        backgroundColor: '#fff',
         marginBottom: 10,
     },
     listContainer: {
         flex: 1,
+        marginTop: 10,
     },
     contactItem: {
+        backgroundColor: '#fff',
+        padding: 20,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 10,
         borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
+        borderBottomColor: '#eee',
+        marginHorizontal: 10,
+        borderRadius: 5,
+        marginTop: 5,
+        elevation: 1, // Add shadow for Android
+        // Add shadow for iOS
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.22,
+        shadowRadius: 2.22,
     },
     contactInfo: {
         flex: 1,
     },
     contactName: {
         fontSize: 18,
-        color: '#1c313a',
+        color: '#333',
+        fontWeight: 'bold',
     },
     contactPhone: {
         fontSize: 16,
-        color: '#666',
+        color: '#555',
     },
     socialLink: {
-        color: '#0645AD',
+        color: '#1c313a',
         textDecorationLine: 'underline',
     },
+    button: {
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderRadius: 5,
+        backgroundColor: '#1c313a',
+        alignSelf: 'flex-start',
+    },
+    buttonText: {
+        color: '#ffffff',
+        fontSize: 16,
+    },
+    buttonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
 });
+
+
 
 export default App;
