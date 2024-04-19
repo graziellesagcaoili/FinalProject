@@ -14,24 +14,28 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, StatusBar, ScrollView, StyleSheet, Text, TextInput, View, TouchableOpacity, Linking } from 'react-native';
 import * as SQLite from 'expo-sqlite';
+import * as ImagePicker from 'expo-image-picker';
 
 const App = () => {
     const [contacts, setContacts] = useState([]);
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
-    const [social, setSocial] = useState('');
+    const [instagram, setInstagram] = useState('');
+    const [facebook, setFacebook] = useState('');
+    const [twitter, setTwitter] = useState('');
+    const [imageUri, setImageUri] = useState('');
     const [editingContact, setEditingContact] = useState(null);
 
 
 
     // Initialize the database
-    const db = SQLite.openDatabase("Contacts.db");
+    const db = SQLite.openDatabase("Contacts8.db");
 
     // Create the table if it doesn't exist
     const createTable = () => {
         db.transaction(tx => {
             tx.executeSql(
-                'CREATE TABLE IF NOT EXISTS Contacts1 (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT, social TEXT);',
+                'CREATE TABLE IF NOT EXISTS Contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT, instagram TEXT, facebook TEXT, twitter TEXT);',
                 [],
                 () => console.log('Table created'),
                 (_, error) => console.log('Error @createTable: ', error)
@@ -58,20 +62,24 @@ const App = () => {
 
     // Add a new contact to the database
     const addContact = () => {
-        if (!name.trim() || !phone.trim() || !social.trim()) {
-            Alert.alert('Please enter name, phone number, and social media link.');
+        if (!name.trim() || !phone.trim() || !facebook.trim() || !instagram.trim() || !twitter.trim()) {
+            Alert.alert('Please enter name, phone number, and social media links.');
             return;
         }
 
         db.transaction(tx => {
             tx.executeSql(
-                'INSERT INTO Contacts1 (name, phone, social) VALUES (?, ?, ?);',
-                [name, phone, social],
+                'INSERT INTO Contacts (name, phone, facebook, instagram, twitter) VALUES (?, ?, ?, ?, ?);',
+                [name, phone, facebook, instagram, twitter],
                 (_, { rowsAffected, insertId }) => {
                     if (rowsAffected > 0) {
-                        setContacts([...contacts, { id: insertId, name, phone }]);
+                        setContacts([...contacts, { id: insertId, name, phone, facebook, instagram, twitter }]);
                         setName('');
                         setPhone('');
+                        setFacebook('');
+                        setInstagram('');
+                        setTwitter('');
+                        setImageUri('');
                         Alert.alert('Contact added successfully');
                     } else {
                         Alert.alert('Failed to add contact');
@@ -84,24 +92,27 @@ const App = () => {
 
     //update contact
     const updateContact = () => {
-        if (!name.trim() || !phone.trim()) {
+        if (!name.trim() || !phone.trim() || !facebook.trim() || !instagram.trim() || !twitter.trim()) {
             Alert.alert('Please enter both name and phone number.');
             return;
         }
 
         db.transaction(tx => {
             tx.executeSql(
-                'UPDATE Contacts SET name=?, phone=?, social=? WHERE id=?;',
-                [name, phone, social, editingContact.id],
+                'UPDATE Contacts SET name=?, phone=?, facebook=?, instagram=?, twitter=? WHERE id=?;',
+                [name, phone, facebook, instagram, twitter, editingContact.id],
                 (_, { rowsAffected }) => {
                     if (rowsAffected > 0) {
                         setContacts(
-                            contacts.map(contact => (contact.id === editingContact.id ? { ...contact, name, phone } : contact))
+                            contacts.map(contact => (contact.id === editingContact.id ? { ...contact, name, phone, facebook, instagram, twitter } : contact))
                         );
                         Alert.alert('Contact updated successfully');
                         setEditingContact(null);
                         setName('');
                         setPhone('');
+                        setFacebook('');
+                        setInstagram('');
+                        setTwitter('');
                     } else {
                         Alert.alert('Failed to update contact');
                     }
@@ -149,14 +160,30 @@ const App = () => {
         }
     };
 
-
+    //Editing the contact
     const handleEditContact = contact => {
         setName(contact.name);
         setPhone(contact.phone);
-        setEditingContact({ id: contact.id, name: contact.name, phone: contact.phone });
+        setFacebook(contact.facebook || ''); 
+        setInstagram(contact.instagram || ''); 
+        setTwitter(contact.twitter || ''); 
+        setEditingContact(contact);
     };
 
 
+    //picking the image
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.cancelled) {
+            setImageUri(result.uri);
+        }
+    };
   
     return (
         <View style={styles.container}>
@@ -176,9 +203,23 @@ const App = () => {
                     keyboardType="phone-pad"
                 />
                 <TextInput
-                    placeholder="Social Media Link"
-                    value={social}
-                    onChangeText={setSocial}
+                    placeholder="Facebook"
+                    value={facebook}
+                    onChangeText={setFacebook}
+                    style={styles.input}
+                    autoCapitalize="none"
+                />
+                <TextInput
+                    placeholder="Instagram"
+                    value={instagram}
+                    onChangeText={setInstagram}
+                    style={styles.input}
+                    autoCapitalize="none"
+                />
+                <TextInput
+                    placeholder="Twitter"
+                    value={twitter}
+                    onChangeText={setTwitter}
                     style={styles.input}
                     autoCapitalize="none"
                 />
@@ -189,20 +230,30 @@ const App = () => {
                 </TouchableOpacity>
             </View>
             <ScrollView style={styles.listContainer}>
-                {contacts.map(({ id, name, phone }) => (
+                {contacts.map(({ id, name, phone, instagram, facebook, twitter }) => (
                     <View key={id} style={styles.contactItem}>
                         <View style={styles.contactInfo}>
                             <Text style={styles.contactName}>{name}</Text>
                             <Text style={styles.contactPhone}>{phone}</Text>
-                            {social ? (
-                                <TouchableOpacity onPress={() => handleOpenLink(social)}>
-                                    <Text style={styles.socialLink}>{social}</Text>
+                            {instagram ? (
+                                <TouchableOpacity onPress={() => handleOpenLink(`https://instagram.com/${instagram}`)}>
+                                    <Text style={styles.socialLink}>{instagram}</Text>
+                                </TouchableOpacity>
+                            ) : null}
+                            {facebook ? (
+                                <TouchableOpacity onPress={() => handleOpenLink(`https://facebook.com/${facebook}`)}>
+                                    <Text style={styles.socialLink}>{facebook}</Text>
+                                </TouchableOpacity>
+                            ) : null}
+                            {twitter ? (
+                                <TouchableOpacity onPress={() => handleOpenLink(`https://twitter.com/${twitter}`)}>
+                                    <Text style={styles.socialLink}>{twitter}</Text>
                                 </TouchableOpacity>
                             ) : null}
                         </View>
                         <View style={styles.buttonsContainer}>
                             <View style={styles.buttonsContainer}>
-                                <TouchableOpacity onPress={() => handleEditContact({ id, name, phone })}>
+                                <TouchableOpacity onPress={() => handleEditContact({ id, name, phone, facebook, instagram, twitter })}>
                                     <Text>Edit</Text> 
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => deleteContact(id)} style={{ marginLeft: 10 }}>
