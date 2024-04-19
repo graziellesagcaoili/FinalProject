@@ -21,3 +21,9 @@ To run this project, you will need to have Node.js and Expo CLI installed on you
 
 Usage
 Upon starting the app, you will be presented with a list of contacts. You can add a new contact by entering the information in the input fields and pressing the 'Add Contact' button. To update a contact, press the 'Edit' button next to their name, make changes, and then press 'Update Contact'. To delete a contact, press the 'Delete' button next to their name.
+
+Acknowledgements
+React Native
+Expo
+SQLite
+Expo Image Picker
